@@ -12,7 +12,8 @@ const userSchema = new Schema({
         type: String,
         required: true,
         max: 255,
-        min: 6
+        min: 6,
+        unique: true
     },
     password: {
         type: String,
@@ -20,10 +21,6 @@ const userSchema = new Schema({
         max: 1024,
         min: 8
     },
-    date: {
-        type: Date,
-        default: Date.now
-    }
-});
+}, {timestamps: true});
 
 module.exports = mongoose.model('User', userSchema);

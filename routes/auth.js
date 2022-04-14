@@ -1,34 +1,23 @@
-const router = require('express').Router();
-const User = require('../model/User');
-const bcrypt = require('bcryptjs');
+const router = require("express").Router();
+const authControllers = require('../controllers/auth');
+const User = require("../model/User");
+const { body } = require('express-validator');
 
-router.post('/register', (req, res, next) => {
-    const name = req.body.name;
-    const email = req.body.email;
-    const password = req.body.email;
-    bcrypt.hash(password, 12)
-        .then(hashedPw => {
-            const user = new User({
-                name: name,
-                password: hashedPw,
-                email: email
-            });
-            user.save()
-                .then(savedUser => {
-                    console.log('User created!');
-                    res.status(200).send(savedUser);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
-        })
-        .catch(err => {
-            console.log(err);
-        });    
-});
+router.post("/register",[
+    body('email').isEmail().isLength({min: 6}).withMessage('Please enter a valid email!')
+    .custom((value, { req }) => {
+        return User.findOne({email: value})
+               .then(userDoc => {
+                   if(userDoc){
+                       return Promise.reject('Email already exists');
+                   }
+               });
+    })
+    .normalizeEmail(),
+    body('password').trim().isLength({min: 8}),
+    body('name').trim().not().isEmpty()
+], authControllers.register);
 
-router.post('/login', (req, res) => {
-
-})
+router.post("/login");
 
 module.exports = router;
